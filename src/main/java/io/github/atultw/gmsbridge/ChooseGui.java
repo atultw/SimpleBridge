@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ChooseGui implements Listener {
-    private final Inventory inv;
+    private static Inventory inv = null;
     private List<MapDef> maps;
 
     public ChooseGui(List<MapDef> m) {
@@ -55,7 +55,7 @@ public class ChooseGui implements Listener {
     }
 
     // You can open the inventory with this
-    public void openInventory(final HumanEntity ent) {
+    public static void openInventory(final HumanEntity ent) {
         ent.openInventory(inv);
     }
 

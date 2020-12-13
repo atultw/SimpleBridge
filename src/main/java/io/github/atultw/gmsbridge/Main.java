@@ -16,8 +16,6 @@ public class Main extends JavaPlugin {
     List<ConfigurationSection> arenasList = new ArrayList();
     List<MapDef> arenas;
 
-
-
     @Override
     public void onEnable() {
 
@@ -76,6 +74,9 @@ public class Main extends JavaPlugin {
             MapDef arenaDataCurrent = new MapDef(displayBlock, cageLoc, SpawnOneLoc, SpawnTwoLoc, LobbyLoc, PlayersNeeded, ArenaName, C1Loc, C2Loc);
             arenas.add(arenaDataCurrent);
         }
+
+        //register selector command on "duel"
+        this.getCommand("duel").setExecutor(new SelectorCommand());
     }
 
 

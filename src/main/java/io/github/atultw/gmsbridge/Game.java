@@ -1,8 +1,9 @@
 package io.github.atultw.gmsbridge;
 
+import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.data.DataException;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,11 +11,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +27,7 @@ public class Game {
         pointsCounter.put(p, newPoints);
     }
 
-    public static void Start(Player p1, Player p2, MapDef m) throws InterruptedException {
+    public static void Start(Player p1, Player p2, MapDef m) throws InterruptedException, DataException, IOException, MaxChangedBlocksException {
 
         HashMap<Integer, Player> playersToSet = new HashMap<>();
 
@@ -92,7 +89,6 @@ public class Game {
 
     @EventHandler
     public void onEDeath(EntityDeathEvent event) {
-
         for (HashMap<Integer, Player> pl : GameMap.PlayersInGame.values()) {
             allPlayersPlaying.addAll(pl.values());
         }
@@ -102,6 +98,10 @@ public class Game {
             Player killed = (Player) event.getEntity();
             if (allPlayersPlaying.contains(attacker)){
                 //Do if player that died is inside a game.
+
+                //prevent respawn screen
+                killed.setHealth(20.0);
+                killed.setFoodLevel(20);
 
                 //increase points by 10 for kill
                 EditPoints(attacker, 10);
@@ -136,7 +136,7 @@ public class Game {
     }
 
     @EventHandler
-    public void onBlockBreak(BlockBreakEvent e) {
+    public void onBlockBreak(BlockBreakEvent e) throws DataException, IOException, MaxChangedBlocksException {
         Player p = e.getPlayer();
         Block b = e.getBlock();
 
@@ -151,6 +151,7 @@ public class Game {
                 MapDef thisMap = GameMap.getMapOfPlayer(p);
                 //reset map
 
+                Reset(thisMap);
 
                 //teleport back to spawn locations
                 GameMap.PlayersInGame.get(thisMap).get(0).teleport(thisMap.getSpawnOneLocation());
@@ -164,15 +165,20 @@ public class Game {
                 //get first player in map of p and award points
                 EditPoints(GameMap.PlayersInGame.get(GameMap.getMapOfPlayer(p)).get(0), 15);
                 p.sendMessage(ChatColor.AQUA + "Bed Broken: 15 Points to you!");
-                GameMap.getMapOfPlayer(p).getSpawnTwoLocation().getBlock().setType(Material.RED_BED);
-                if (p == GameMap.PlayersInGame.get(GameMap.getMapOfPlayer(p)).get(1)) {
-                    p.teleport(GameMap.getMapOfPlayer(p).getSpawnTwoLocation());
-                }
+
+                MapDef thisMap = GameMap.getMapOfPlayer(p);
+                //reset map
+
+                Reset(thisMap);
+
+                //teleport back to spawn locations
+                GameMap.PlayersInGame.get(thisMap).get(0).teleport(thisMap.getSpawnOneLocation());
+                GameMap.PlayersInGame.get(thisMap).get(1).teleport(thisMap.getSpawnTwoLocation());
             }
         }
     }
 
-    public static void Stop(Player p1, Player p2, MapDef m) {
+    public static void Stop(Player p1, Player p2, MapDef m) throws DataException, IOException, MaxChangedBlocksException {
 
         // teleport back to lobby
         p1.teleport(m.getLobbyLocation());
@@ -183,5 +189,12 @@ public class Game {
         allPlayersPlaying.remove(p2);
         GameMap.PlayersInGame.get(m).remove(1);
         GameMap.PlayersInGame.get(m).remove(2);
+
+        Reset(m);
+
+    }
+
+    public static void Reset(MapDef m) throws IOException, MaxChangedBlocksException, DataException {
+        InternalSchematic.Load(m, m.getC1l().getWorld(), m.getC1l());
     }
 }
