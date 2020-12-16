@@ -5,37 +5,47 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Main extends JavaPlugin {
     FileConfiguration config;
     List<ConfigurationSection> arenasList = new ArrayList();
-    List<MapDef> arenas;
+    static List<MapDef> allArenas = new ArrayList();
+
+    private final Game g = new Game(this);
+
+    public Game getG() {
+        return g;
+    }
 
     @Override
     public void onEnable() {
-
         saveDefaultConfig();
         this.config = getConfig();
+
+        //register listeners _____________
+        new InventoryListener(this);
+
         // FOR LOOP loads the map info from config and saves it into mapdef objects for later use.
-        for (String key : config.getConfigurationSection("arenas").getKeys(false)) {
+        for (String key : Objects.requireNonNull(config.getConfigurationSection("arenas")).getKeys(false)) {
             // get the section for the individual key
             ConfigurationSection thisArena = config.getConfigurationSection("arenas." + key);
             this.arenasList.add(config.getConfigurationSection("arenas." + key));
 
             // get the cage info
+            assert thisArena != null;
+            World cageW = Bukkit.getWorld(Objects.requireNonNull(thisArena.getString("cageworld")));
             int cageX = thisArena.getInt("cagex");
             int cageY = thisArena.getInt("cagey");
             int cageZ = thisArena.getInt("cagez");
-            World cageW = Bukkit.getWorld(thisArena.getString("cageworld"));
             Location cageLoc = new Location(cageW, cageX, cageY, cageZ);
             String displayBlock = thisArena.getString("displayblock");
 
-            World SpawnW = Bukkit.getWorld(thisArena.getString("arenaworld"));
+            World SpawnW = Bukkit.getWorld(Objects.requireNonNull(thisArena.getString("arenaworld")));
 
             // get the spawnone info
             int SpawnOneX = thisArena.getInt("xone");
@@ -50,11 +60,11 @@ public class Main extends JavaPlugin {
             Location SpawnTwoLoc = new Location(SpawnW, SpawnTwoX, SpawnTwoY, SpawnTwoZ);
 
             // get the lobby info
-            World LobbyW = Bukkit.getWorld(thisArena.getString("lobbyworld"));
+            World LobbyW = Bukkit.getWorld(Objects.requireNonNull(thisArena.getString("lobbyworld")));
             int LobbyX = thisArena.getInt("xlobby");
             int LobbyY = thisArena.getInt("ylobby");
             int LobbyZ = thisArena.getInt("zlobby");
-            Location LobbyLoc = new Location(SpawnW, SpawnTwoX, SpawnTwoY, SpawnTwoZ);
+            Location LobbyLoc = new Location(LobbyW, LobbyX, LobbyY, LobbyZ);
 
             //corners
             int c1X = thisArena.getInt("c1x");
@@ -71,13 +81,21 @@ public class Main extends JavaPlugin {
             int PlayersNeeded = thisArena.getInt("players");
             String ArenaName = thisArena.getString("name");
 
+            /**DEBUG**/ //Bukkit.getConsoleSender().sendMessage(cageLoc.toString());
+            /**DEBUG**/ //Bukkit.getConsoleSender().sendMessage(Objects.requireNonNull(thisArena.getString("cageworld")));
+            /**DEBUG**/ //assert cageW != null;
+            /**DEBUG**/ //Bukkit.getConsoleSender().sendMessage(cageW.toString());
+
+
             MapDef arenaDataCurrent = new MapDef(displayBlock, cageLoc, SpawnOneLoc, SpawnTwoLoc, LobbyLoc, PlayersNeeded, ArenaName, C1Loc, C2Loc);
-            arenas.add(arenaDataCurrent);
+
+            allArenas.add(arenaDataCurrent);
         }
 
         //register selector command on "duel"
-        this.getCommand("duel").setExecutor(new SelectorCommand());
+        Objects.requireNonNull(this.getCommand("duel")).setExecutor(new SelectorCommand());
+        Objects.requireNonNull(this.getCommand("reloadb2")).setExecutor(new ReloadMapCommand());
+        Objects.requireNonNull(this.getCommand("saveb2")).setExecutor(new SaveMapCommand());
     }
-
 
 }

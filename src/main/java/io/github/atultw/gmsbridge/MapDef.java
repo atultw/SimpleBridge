@@ -2,13 +2,7 @@ package io.github.atultw.gmsbridge;
 
 // Define details for a map accessible where needed
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-
-import java.util.HashSet;
-import java.util.List;
 
 public class MapDef {
     String DisplayBlock;

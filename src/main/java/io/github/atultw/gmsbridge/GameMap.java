@@ -9,7 +9,7 @@ import java.util.*;
 public class GameMap {
 
     // use to find who is waiting in each map
-    static HashMap<MapDef, List<Player>> PlayersWaiting = new HashMap<MapDef, List<Player>>();
+    static HashMap<MapDef, List<Player>> PlayersWaiting = new HashMap<>();
 
     // use to find who is playing in maps
     static HashMap<MapDef, HashMap<Integer, Player>> PlayersInGame = new HashMap<MapDef, HashMap<Integer, Player>>();

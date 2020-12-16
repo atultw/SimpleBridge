@@ -1,3 +1,18 @@
-  name:
-    main:
-  version:
+name: GmsBridge
+version: 0.1.1
+main: io.github.atultw.gmsbridge.Main
+api-version: 1.8
+depend: [ Multiverse-Core ]
+commands:
+  duel:
+    description: Select a map to duel
+    usage: /<command>
+    permission: gms.home
+  reloadb2:
+    description: debug command to test schematic
+    usage: /<command>
+    permission: gms.home
+  saveb2:
+    description: debug command to test schematic
+    usage: /<command>
+    permission: gms.home

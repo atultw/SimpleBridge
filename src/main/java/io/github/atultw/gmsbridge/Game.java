@@ -1,7 +1,9 @@
 package io.github.atultw.gmsbridge;
 
+
 import com.sk89q.worldedit.MaxChangedBlocksException;
-import com.sk89q.worldedit.data.DataException;
+import com.sk89q.worldedit.world.DataException;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -18,6 +20,12 @@ import java.util.HashSet;
 
 public class Game {
 
+    private static Main plugin;
+
+    public Game(Main plugin) {
+        Game.plugin = plugin;
+    }
+
     static HashSet<Player> allPlayersPlaying;
     static HashMap<Player, Integer> pointsCounter = new HashMap<>();
 
@@ -27,12 +35,14 @@ public class Game {
         pointsCounter.put(p, newPoints);
     }
 
-    public static void Start(Player p1, Player p2, MapDef m) throws InterruptedException, DataException, IOException, MaxChangedBlocksException {
+    public static void Start(Player p1, Player p2, MapDef m) throws InterruptedException, IOException, DataException, MaxChangedBlocksException {
+
+        /**DEBUG**/Bukkit.broadcastMessage("start called");
 
         HashMap<Integer, Player> playersToSet = new HashMap<>();
 
         //SAVE THE SCHEMATIC FOR LATER
-
+        InternalSchematic.New(m, m.getC1l().getWorld(), m.getC1l(), m.getC2l());
 
         //PUT THE PLAYERS INTO THE NEW HMAP
         playersToSet.put(1, p1);
@@ -48,43 +58,77 @@ public class Game {
         p2.teleport(m.getSpawnTwoLocation());
 
         //give initial items
+        p1.getInventory().clear();
+        p2.getInventory().clear();
         ItemStack[] startItems = {new ItemStack(Material.IRON_BOOTS), new ItemStack(Material.IRON_CHESTPLATE), new ItemStack(Material.IRON_LEGGINGS), new ItemStack(Material.IRON_HELMET), new ItemStack(Material.IRON_BOOTS), new ItemStack(Material.IRON_SWORD)};
         p1.getInventory().addItem(startItems);
 
-        Thread.sleep(10000);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                /** DEBUG**/Bukkit.broadcastMessage("This message is shown after ten seconds");
+                p1.sendTitle(ChatColor.BLUE + "50 Seconds!", "left till end of match");
+                p2.sendTitle(ChatColor.BLUE + "50 Seconds!", "left till end of match");
+            }
+        }, 200L);
 
-        p1.sendTitle(ChatColor.BLUE + "50 Seconds!", "left till end of match", 1, 20, 1);
-        p2.sendTitle(ChatColor.BLUE + "50 Seconds!", "left till end of match", 1, 20, 1);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                /** DEBUG**/Bukkit.broadcastMessage("This message is shown after ten seconds");
+                p1.sendTitle(ChatColor.AQUA + "40 Seconds!", "left till end of match");
+                p2.sendTitle(ChatColor.AQUA + "40 Seconds!", "left till end of match");
+            }
+        }, 200L);
 
-        Thread.sleep(10000);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                /** DEBUG**/Bukkit.broadcastMessage("This message is shown after ten seconds");
+                p1.sendTitle(ChatColor.GREEN + "30 Seconds!", "left till end of match");
+                p2.sendTitle(ChatColor.GREEN + "30 Seconds!", "left till end of match");
+            }
+        }, 200L);
 
-        p1.sendTitle(ChatColor.AQUA + "40 Seconds!", "left till end of match", 1, 20, 1);
-        p2.sendTitle(ChatColor.AQUA + "40 Seconds!", "left till end of match", 1, 20, 1);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                /** DEBUG**/Bukkit.broadcastMessage("This message is shown after ten seconds");
+                p1.sendTitle(ChatColor.DARK_GREEN + "20 Seconds!", "left till end of match");
+                p2.sendTitle(ChatColor.DARK_GREEN + "20 Seconds!", "left till end of match");
+            }
+        }, 200L);
 
-        Thread.sleep(10000);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                /** DEBUG**/Bukkit.broadcastMessage("This message is shown after ten seconds");
+                p1.sendTitle(ChatColor.GOLD + "10 Seconds!", "left till end of match");
+                p2.sendTitle(ChatColor.GOLD + "10 Seconds!", "left till end of match");
+            }
+        }, 200L);
 
-        p1.sendTitle(ChatColor.GREEN + "30 Seconds!", "left till end of match", 1, 20, 1);
-        p2.sendTitle(ChatColor.GREEN + "30 Seconds!", "left till end of match", 1, 20, 1);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                /** DEBUG**/Bukkit.broadcastMessage("This message is shown after ten seconds");
+                p1.sendTitle(ChatColor.RED + "All Done!", "GG! You got " + ChatColor.AQUA + pointsCounter.get(p1) + " Points!");
+                p2.sendTitle(ChatColor.RED + "All Done!", "GG! You got " + ChatColor.AQUA + pointsCounter.get(p2) + " Points!");
+            }
+        }, 200L);
 
-        Thread.sleep(10000);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                /** DEBUG**/Bukkit.broadcastMessage("This message is shown after ten seconds");
+                try {
+                    Stop(p1, p2, m);
+                } catch (IOException | MaxChangedBlocksException | DataException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 15L);
 
-        p1.sendTitle(ChatColor.DARK_GREEN + "20 Seconds!", "left till end of match", 1, 20, 1);
-        p2.sendTitle(ChatColor.DARK_GREEN + "20 Seconds!", "left till end of match", 1, 20, 1);
-
-
-        Thread.sleep(10000);
-
-        p1.sendTitle(ChatColor.GOLD + "10 Seconds!", "left till end of match", 1, 20, 1);
-        p2.sendTitle(ChatColor.GOLD + "10 Seconds!", "left till end of match", 1, 20, 1);
-
-        Thread.sleep(10000);
-
-        p1.sendTitle(ChatColor.RED + "All Done!", "GG! You got " + ChatColor.AQUA + pointsCounter.get(p1) + " Points!", 1, 70, 1);
-        p2.sendTitle(ChatColor.RED + "All Done!", "GG! You got " + ChatColor.AQUA + pointsCounter.get(p2) + " Points!", 1, 70, 1);
-
-        Thread.sleep(500);
-
-        Stop(p1, p2, m);
     }
 
     @EventHandler
@@ -136,17 +180,17 @@ public class Game {
     }
 
     @EventHandler
-    public void onBlockBreak(BlockBreakEvent e) throws DataException, IOException, MaxChangedBlocksException {
+    public void onBlockBreak(BlockBreakEvent e) throws IOException, DataException, MaxChangedBlocksException {
         Player p = e.getPlayer();
         Block b = e.getBlock();
 
         //if first bed broken
         if (b.getLocation() == GameMap.getMapOfPlayer(p).getSpawnOneLocation()) {
-            if (allPlayersPlaying.contains(p)){
+            if (allPlayersPlaying.contains(p)) {
                 //get second player in map of p and award points
                 EditPoints(GameMap.PlayersInGame.get(GameMap.getMapOfPlayer(p)).get(1), 15);
                 p.sendMessage(ChatColor.AQUA + "Bed Broken: 15 Points to you!");
-                GameMap.getMapOfPlayer(p).getSpawnOneLocation().getBlock().setType(Material.RED_BED);
+                GameMap.getMapOfPlayer(p).getSpawnOneLocation().getBlock().setType(Material.BED);
 
                 MapDef thisMap = GameMap.getMapOfPlayer(p);
                 //reset map
@@ -178,7 +222,11 @@ public class Game {
         }
     }
 
-    public static void Stop(Player p1, Player p2, MapDef m) throws DataException, IOException, MaxChangedBlocksException {
+    public static void Stop(Player p1, Player p2, MapDef m) throws IOException, DataException, MaxChangedBlocksException {
+        Bukkit.broadcastMessage("stopped cool");
+        // clear inventories
+        p1.getInventory().clear();
+        p2.getInventory().clear();
 
         // teleport back to lobby
         p1.teleport(m.getLobbyLocation());
@@ -187,14 +235,13 @@ public class Game {
         // remove from the public lists
         allPlayersPlaying.remove(p1);
         allPlayersPlaying.remove(p2);
-        GameMap.PlayersInGame.get(m).remove(1);
-        GameMap.PlayersInGame.get(m).remove(2);
+        GameMap.PlayersInGame.remove(m);
 
         Reset(m);
 
     }
 
-    public static void Reset(MapDef m) throws IOException, MaxChangedBlocksException, DataException {
+    public static void Reset(MapDef m) throws DataException, IOException, MaxChangedBlocksException {
         InternalSchematic.Load(m, m.getC1l().getWorld(), m.getC1l());
     }
 }

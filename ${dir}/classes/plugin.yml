@@ -1,0 +1,9 @@
+name: GmsBridge
+version: 0.1.1
+main: io.github.atultw.gmsbridge.Main
+api-version: 1.8
+commands:
+    duel:
+        description: Select a map to duel
+        usage: /<command>
+        permission: gms.home
