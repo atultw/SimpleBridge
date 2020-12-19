@@ -31,6 +31,7 @@ public class Main extends JavaPlugin {
         new InventoryListener(this);
 
         // FOR LOOP loads the map info from config and saves it into mapdef objects for later use.
+        // this loop also creates entries in gamemap
         for (String key : Objects.requireNonNull(config.getConfigurationSection("arenas")).getKeys(false)) {
             // get the section for the individual key
             ConfigurationSection thisArena = config.getConfigurationSection("arenas." + key);
@@ -88,11 +89,14 @@ public class Main extends JavaPlugin {
 
 
             MapDef arenaDataCurrent = new MapDef(displayBlock, cageLoc, SpawnOneLoc, SpawnTwoLoc, LobbyLoc, PlayersNeeded, ArenaName, C1Loc, C2Loc);
+            //save to gamemap array
+            Maps.PlayersWaiting.put(arenaDataCurrent, null);
+            Maps.PlayersInGame.put(arenaDataCurrent, null);
 
             allArenas.add(arenaDataCurrent);
         }
 
-        //register selector command on "duel"
+        //register commands
         Objects.requireNonNull(this.getCommand("duel")).setExecutor(new SelectorCommand());
         Objects.requireNonNull(this.getCommand("reloadb2")).setExecutor(new ReloadMapCommand());
         Objects.requireNonNull(this.getCommand("saveb2")).setExecutor(new SaveMapCommand());

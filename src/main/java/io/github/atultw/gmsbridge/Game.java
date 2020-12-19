@@ -9,21 +9,24 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class Game {
-
+public class Game implements Listener {
     private static Main plugin;
 
     public Game(Main plugin) {
         Game.plugin = plugin;
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     static HashSet<Player> allPlayersPlaying;
@@ -36,8 +39,11 @@ public class Game {
     }
 
     public static void Start(Player p1, Player p2, MapDef m) throws InterruptedException, IOException, DataException, MaxChangedBlocksException {
+        // add these players
+        allPlayersPlaying.add(p1);
+        allPlayersPlaying.add(p2);
 
-        /**DEBUG**/Bukkit.broadcastMessage("start called");
+        ///**DEBUG**/Bukkit.broadcastMessage("start called");
 
         HashMap<Integer, Player> playersToSet = new HashMap<>();
 
@@ -47,21 +53,28 @@ public class Game {
         //PUT THE PLAYERS INTO THE NEW HMAP
         playersToSet.put(1, p1);
         playersToSet.put(2, p2);
-        GameMap.PlayersInGame.put(m, playersToSet);
+        Maps.PlayersInGame.put(m, playersToSet);
 
-        //let players know
-        p1.sendMessage("You are now dueling " + ChatColor.AQUA + p2.getName() + ChatColor.WHITE + "! Let the game begin! To score points, jump into the goal at the other base.");
-        p2.sendMessage("You are now dueling " + ChatColor.AQUA + p1.getName() + ChatColor.WHITE + "! Let the game begin! To score points, jump into the goal at the other base.");
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
 
-        //teleport the players
-        p1.teleport(m.getSpawnOneLocation());
-        p2.teleport(m.getSpawnTwoLocation());
+                /** DEBUG**/Bukkit.broadcastMessage("initializing game");
+                //let players know
+                p1.sendMessage("You are now dueling " + ChatColor.AQUA + p2.getName() + ChatColor.WHITE + "! Let the game begin! To score points, jump into the goal at the other base.");
+                p2.sendMessage("You are now dueling " + ChatColor.AQUA + p1.getName() + ChatColor.WHITE + "! Let the game begin! To score points, jump into the goal at the other base.");
 
-        //give initial items
-        p1.getInventory().clear();
-        p2.getInventory().clear();
-        ItemStack[] startItems = {new ItemStack(Material.IRON_BOOTS), new ItemStack(Material.IRON_CHESTPLATE), new ItemStack(Material.IRON_LEGGINGS), new ItemStack(Material.IRON_HELMET), new ItemStack(Material.IRON_BOOTS), new ItemStack(Material.IRON_SWORD)};
-        p1.getInventory().addItem(startItems);
+                //teleport the players
+                p1.teleport(m.getSpawnOneLocation());
+                p2.teleport(m.getSpawnTwoLocation());
+
+                //give initial items
+                p1.getInventory().clear();
+                p2.getInventory().clear();
+                ItemStack[] startItems = {new ItemStack(Material.IRON_BOOTS), new ItemStack(Material.IRON_CHESTPLATE), new ItemStack(Material.IRON_LEGGINGS), new ItemStack(Material.IRON_HELMET), new ItemStack(Material.IRON_BOOTS), new ItemStack(Material.IRON_SWORD)};
+                p1.getInventory().addItem(startItems);
+            }
+        }, 20L);
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
             @Override
@@ -120,9 +133,9 @@ public class Game {
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
             @Override
             public void run() {
-                /** DEBUG**/Bukkit.broadcastMessage("This message is shown after ten seconds");
+                /** DEBUG**/Bukkit.broadcastMessage("stopping");
                 try {
-                    Stop(p1, p2, m);
+                    Stop(m);
                 } catch (IOException | MaxChangedBlocksException | DataException e) {
                     e.printStackTrace();
                 }
@@ -131,16 +144,36 @@ public class Game {
 
     }
 
+    public static void Stop(MapDef m) throws IOException, DataException, MaxChangedBlocksException {
+        Bukkit.broadcastMessage("stopped cool");
+        // clear inventories
+        Maps.PlayersInGame.get(m).get(0).getInventory().clear();
+        Maps.PlayersInGame.get(m).get(1).getInventory().clear();
+
+        // teleport back to lobby
+        Maps.PlayersInGame.get(m).get(0).teleport(m.getLobbyLocation());
+        Maps.PlayersInGame.get(m).get(1).teleport(m.getLobbyLocation());
+
+        // remove from the public lists
+        allPlayersPlaying.remove(Maps.PlayersInGame.get(m).get(0));
+        allPlayersPlaying.remove(Maps.PlayersInGame.get(m).get(1));
+        Maps.PlayersInGame.remove(m);
+
+        Reset(m);
+
+    }
+
+    public static void Reset(MapDef m) throws DataException, IOException, MaxChangedBlocksException {
+        InternalSchematic.Load(m, m.getC1l().getWorld(), m.getC1l());
+    }
+
     @EventHandler
     public void onEDeath(EntityDeathEvent event) {
-        for (HashMap<Integer, Player> pl : GameMap.PlayersInGame.values()) {
-            allPlayersPlaying.addAll(pl.values());
-        }
 
         if (event.getEntity().getKiller() != null) {
             Player attacker = event.getEntity().getKiller();
             Player killed = (Player) event.getEntity();
-            if (allPlayersPlaying.contains(attacker)){
+            if (allPlayersPlaying.contains(attacker)) {
                 //Do if player that died is inside a game.
 
                 //prevent respawn screen
@@ -158,16 +191,28 @@ public class Game {
 
                 //teleport to bed location instead of global spawn
                 // if killed is player 0 of this game
-                if (killed == GameMap.PlayersInGame.get(GameMap.getMapOfPlayer(killed)).get(0)) {
-                    killed.teleport(GameMap.getMapOfPlayer(killed).getSpawnOneLocation());
+                if (killed == Maps.PlayersInGame.get(Maps.getMapOfPlayer(killed)).get(0)) {
+                    killed.teleport(Maps.getMapOfPlayer(killed).getSpawnOneLocation());
                 }
 
-                if (killed == GameMap.PlayersInGame.get(GameMap.getMapOfPlayer(killed)).get(1)) {
-                    killed.teleport(GameMap.getMapOfPlayer(killed).getSpawnTwoLocation());
+                if (killed == Maps.PlayersInGame.get(Maps.getMapOfPlayer(killed)).get(1)) {
+                    killed.teleport(Maps.getMapOfPlayer(killed).getSpawnTwoLocation());
                 }
             }
         }
 
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent event) {
+        //Location spawnLocation = new Location(world, x, y, z, yaw, pitch);
+        if (event.getPlayer() == Maps.PlayersInGame.get(Maps.getMapOfPlayer(event.getPlayer())).get(0)) {
+            event.setRespawnLocation(Maps.getMapOfPlayer(event.getPlayer()).getC1l());
+        }
+        //if second player...
+        if (event.getPlayer() == Maps.PlayersInGame.get(Maps.getMapOfPlayer(event.getPlayer())).get(1)) {
+            event.setRespawnLocation(Maps.getMapOfPlayer(event.getPlayer()).getC2l());
+        }
     }
 
     @EventHandler
@@ -185,63 +230,48 @@ public class Game {
         Block b = e.getBlock();
 
         //if first bed broken
-        if (b.getLocation() == GameMap.getMapOfPlayer(p).getSpawnOneLocation()) {
+        if (b.getLocation() == Maps.getMapOfPlayer(p).getSpawnOneLocation()) {
             if (allPlayersPlaying.contains(p)) {
                 //get second player in map of p and award points
-                EditPoints(GameMap.PlayersInGame.get(GameMap.getMapOfPlayer(p)).get(1), 15);
+                EditPoints(Maps.PlayersInGame.get(Maps.getMapOfPlayer(p)).get(1), 15);
                 p.sendMessage(ChatColor.AQUA + "Bed Broken: 15 Points to you!");
-                GameMap.getMapOfPlayer(p).getSpawnOneLocation().getBlock().setType(Material.BED);
+                Maps.getMapOfPlayer(p).getSpawnOneLocation().getBlock().setType(Material.BED);
 
-                MapDef thisMap = GameMap.getMapOfPlayer(p);
+                MapDef thisMap = Maps.getMapOfPlayer(p);
                 //reset map
 
                 Reset(thisMap);
 
                 //teleport back to spawn locations
-                GameMap.PlayersInGame.get(thisMap).get(0).teleport(thisMap.getSpawnOneLocation());
-                GameMap.PlayersInGame.get(thisMap).get(1).teleport(thisMap.getSpawnTwoLocation());
+                Maps.PlayersInGame.get(thisMap).get(0).teleport(thisMap.getSpawnOneLocation());
+                Maps.PlayersInGame.get(thisMap).get(1).teleport(thisMap.getSpawnTwoLocation());
             }
         }
 
         //if second bed broken
-        if (b.getLocation() == GameMap.getMapOfPlayer(p).getSpawnTwoLocation()) {
-            if (allPlayersPlaying.contains(p)){
+        if (b.getLocation() == Maps.getMapOfPlayer(p).getSpawnTwoLocation()) {
+            if (allPlayersPlaying.contains(p)) {
                 //get first player in map of p and award points
-                EditPoints(GameMap.PlayersInGame.get(GameMap.getMapOfPlayer(p)).get(0), 15);
+                EditPoints(Maps.PlayersInGame.get(Maps.getMapOfPlayer(p)).get(0), 15);
                 p.sendMessage(ChatColor.AQUA + "Bed Broken: 15 Points to you!");
 
-                MapDef thisMap = GameMap.getMapOfPlayer(p);
+                MapDef thisMap = Maps.getMapOfPlayer(p);
                 //reset map
 
                 Reset(thisMap);
 
                 //teleport back to spawn locations
-                GameMap.PlayersInGame.get(thisMap).get(0).teleport(thisMap.getSpawnOneLocation());
-                GameMap.PlayersInGame.get(thisMap).get(1).teleport(thisMap.getSpawnTwoLocation());
+                Maps.PlayersInGame.get(thisMap).get(0).teleport(thisMap.getSpawnOneLocation());
+                Maps.PlayersInGame.get(thisMap).get(1).teleport(thisMap.getSpawnTwoLocation());
             }
         }
     }
 
-    public static void Stop(Player p1, Player p2, MapDef m) throws IOException, DataException, MaxChangedBlocksException {
-        Bukkit.broadcastMessage("stopped cool");
-        // clear inventories
-        p1.getInventory().clear();
-        p2.getInventory().clear();
-
-        // teleport back to lobby
-        p1.teleport(m.getLobbyLocation());
-        p2.teleport(m.getLobbyLocation());
-
-        // remove from the public lists
-        allPlayersPlaying.remove(p1);
-        allPlayersPlaying.remove(p2);
-        GameMap.PlayersInGame.remove(m);
-
-        Reset(m);
-
-    }
-
-    public static void Reset(MapDef m) throws DataException, IOException, MaxChangedBlocksException {
-        InternalSchematic.Load(m, m.getC1l().getWorld(), m.getC1l());
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) throws DataException, IOException, MaxChangedBlocksException {
+        Player p = e.getPlayer();
+        if (allPlayersPlaying.contains(p)) {
+            Stop(Maps.getMapOfPlayer(p));
+        }
     }
 }
