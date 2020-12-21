@@ -139,17 +139,20 @@ public class Game implements Listener {
     public void Stop() throws IOException, DataException, MaxChangedBlocksException {
         Bukkit.broadcastMessage("stopped cool");
         // clear inventories
-        PlayersPlaying.get(0).getInventory().clear();
-        PlayersPlaying.get(1).getInventory().clear();
+        p1.getInventory().clear();
+        p2.getInventory().clear();
 
         // teleport back to lobby
-        PlayersPlaying.get(0).teleport(m.getLobbyLocation());
-        PlayersPlaying.get(1).teleport(m.getLobbyLocation());
+        p1.teleport(m.getLobbyLocation());
+        p2.teleport(m.getLobbyLocation());
 
-        // remove from the public lists
-        allPlayersPlaying.remove(PlayersPlaying.get(0));
-        allPlayersPlaying.remove(PlayersPlaying.get(1));
-        PlayersPlaying.remove(m);
+        // remove from the lists
+        allPlayersPlaying.remove(p1);
+        allPlayersPlaying.remove(p2);
+
+        //manage points
+        pointsCounter.remove(p1);
+        pointsCounter.remove(p2);
 
         Reset(m);
 

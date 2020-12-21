@@ -2,7 +2,7 @@ name: GmsBridge
 version: 0.1.1
 main: io.github.atultw.gmsbridge.Main
 api-version: 1.8
-depend: [ Multiverse-Core ]
+depend: [ Multiverse-Core, WorldEdit ]
 commands:
   duel:
     description: Select a map to duel
