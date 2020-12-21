@@ -24,30 +24,31 @@ public class MapDef {
         this.PlayersNeeded = pn;
         this.ArenaName = an;
         this.c1l = c1l;
-        this.c2l = c1l;
+        this.c2l = c2l;
+        this.LobbyLocation = ll;
     }
 
-    public Location getCageLocation(){
+    public Location getCageLocation() {
         return this.CageLocation;
     }
 
-    public String getDisplayBlock(){
+    public String getDisplayBlock() {
         return this.DisplayBlock;
     }
 
-    public String getArenaName(){
+    public String getArenaName() {
         return this.ArenaName;
     }
 
-    public Location getSpawnOneLocation(){
+    public Location getSpawnOneLocation() {
         return this.SpawnOneLocation;
     }
 
-    public Location getSpawnTwoLocation(){
+    public Location getSpawnTwoLocation() {
         return this.SpawnTwoLocation;
     }
 
-    public Location getLobbyLocation(){
+    public Location getLobbyLocation() {
         return this.LobbyLocation;
     }
 
@@ -58,10 +59,5 @@ public class MapDef {
     public Location getC2l() {
         return this.c2l;
     }
-
-    public int getPlayerCount(){
-        return this.PlayersNeeded;
-    }
-
 
 }

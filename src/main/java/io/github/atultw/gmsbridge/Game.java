@@ -23,10 +23,16 @@ import java.util.HashSet;
 import java.util.List;
 
 public class Game implements Listener {
+    static HashSet<Player> allPlayersPlaying;
+    static List<MapDef> MapsInUse;
+    static HashMap<Player, Integer> pointsCounter = new HashMap<>();
     private static Main plugin;
+    public List<Player> PlayersPlaying;
     Player p1;
     Player p2;
     MapDef m;
+
+    //constructors
 
     public Game(Player p1, Player p2, MapDef ma) {
         this.p1 = p1;
@@ -39,10 +45,9 @@ public class Game implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public List<Player> PlayersWaiting;
-    public List<Player> PlayersPlaying;
-    static HashSet<Player> allPlayersPlaying;
-    static HashMap<Player, Integer> pointsCounter = new HashMap<>();
+    public static void Reset(MapDef m) throws DataException, IOException, MaxChangedBlocksException {
+        InternalSchematic.Load(m, m.getC1l().getWorld(), m.getC1l());
+    }
 
     public void EditPoints(Player p, Integer n) {
         Integer oldPoints = pointsCounter.get(p);
@@ -55,9 +60,10 @@ public class Game implements Listener {
         allPlayersPlaying.add(p1);
         allPlayersPlaying.add(p2);
 
-        ///**DEBUG**/Bukkit.broadcastMessage("start called");
+        // mark map as in use
+        MapsInUse.add(m);
 
-        HashMap<Integer, Player> playersToSet = new HashMap<>();
+        ///**DEBUG**/Bukkit.broadcastMessage("start called");
 
         //SAVE THE SCHEMATIC FOR LATER
         InternalSchematic.New(m, m.getC1l().getWorld(), m.getC1l(), m.getC2l());
@@ -84,45 +90,21 @@ public class Game implements Listener {
             p1.getInventory().addItem(startItems);
         }, 20L);
 
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            Bukkit.broadcastMessage("This message is shown after ten seconds");
-            p1.sendTitle(ChatColor.BLUE + "50 Seconds!", "left till end of match");
-            p2.sendTitle(ChatColor.BLUE + "50 Seconds!", "left till end of match");
-        }, 200L);
-
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            Bukkit.broadcastMessage("This message is shown after ten seconds");
-            p1.sendTitle(ChatColor.AQUA + "40 Seconds!", "left till end of match");
-            p2.sendTitle(ChatColor.AQUA + "40 Seconds!", "left till end of match");
-        }, 200L);
-
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            /* DEBUG**/
-            Bukkit.broadcastMessage("This message is shown after ten seconds");
-            p1.sendTitle(ChatColor.GREEN + "30 Seconds!", "left till end of match");
-            p2.sendTitle(ChatColor.GREEN + "30 Seconds!", "left till end of match");
-        }, 200L);
-
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            /* DEBUG**/
-            Bukkit.broadcastMessage("This message is shown after ten seconds");
-            p1.sendTitle(ChatColor.DARK_GREEN + "20 Seconds!", "left till end of match");
-            p2.sendTitle(ChatColor.DARK_GREEN + "20 Seconds!", "left till end of match");
-        }, 200L);
-
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            /* DEBUG**/
-            Bukkit.broadcastMessage("This message is shown after ten seconds");
-            p1.sendTitle(ChatColor.GOLD + "10 Seconds!", "left till end of match");
-            p2.sendTitle(ChatColor.GOLD + "10 Seconds!", "left till end of match");
-        }, 200L);
+        for (int i = 1; i < 6; i++) {
+            final int count = i;
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                Bukkit.broadcastMessage("This message is shown after" + count * 10 + "seconds");
+                p1.sendTitle(60 - 10 * count + "" + ChatColor.BLUE + "Seconds!", "left till end of match");
+                p2.sendTitle(60 - 10 * count + "" + ChatColor.BLUE + "Seconds!", "left till end of match");
+            }, Long.parseLong("200*count + L"));
+        }
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
             /* DEBUG**/
             Bukkit.broadcastMessage("This message is shown after ten seconds");
             p1.sendTitle(ChatColor.RED + "All Done!", "GG! You got " + ChatColor.AQUA + pointsCounter.get(p1) + " Points!");
             p2.sendTitle(ChatColor.RED + "All Done!", "GG! You got " + ChatColor.AQUA + pointsCounter.get(p2) + " Points!");
-        }, 200L);
+        }, 1200L);
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
             /* DEBUG**/
@@ -132,7 +114,7 @@ public class Game implements Listener {
             } catch (IOException | MaxChangedBlocksException | DataException e) {
                 e.printStackTrace();
             }
-        }, 15L);
+        }, 1215L);
 
     }
 
@@ -154,12 +136,11 @@ public class Game implements Listener {
         pointsCounter.remove(p1);
         pointsCounter.remove(p2);
 
+        // reset from schematic
         Reset(m);
 
-    }
-
-    public static void Reset(MapDef m) throws DataException, IOException, MaxChangedBlocksException {
-        InternalSchematic.Load(m, m.getC1l().getWorld(), m.getC1l());
+        // map no longer in use
+        MapsInUse.remove(m);
     }
 
     @EventHandler
@@ -168,8 +149,7 @@ public class Game implements Listener {
         if (event.getEntity().getKiller() != null) {
             Player attacker = event.getEntity().getKiller();
             Player killed = (Player) event.getEntity();
-            if (allPlayersPlaying.contains(attacker)) {
-                //Do if player that died is inside a game.
+            if (attacker == p1 | attacker == p2) {
 
                 //prevent respawn screen
                 killed.setHealth(20.0);
@@ -177,8 +157,7 @@ public class Game implements Listener {
 
                 //increase points by 10 for kill
                 EditPoints(attacker, 10);
-                attacker.sendMessage(ChatColor.AQUA + "You Killed" + killed + "! +10 Points");
-
+                attacker.sendMessage(ChatColor.AQUA + "You Killed" + killed.getName() + "! +10 Points");
 
                 //decrease points by 10 for kill
                 EditPoints(killed, -10);
@@ -267,7 +246,7 @@ public class Game implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent e) throws DataException, IOException, MaxChangedBlocksException {
         Player p = e.getPlayer();
-        if (allPlayersPlaying.contains(p)) {
+        if (p == p1 | p == p2) {
             Stop();
         }
     }

@@ -6,10 +6,11 @@ import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class Maps {
 
-    public static HashSet<MapDef> AllMaps;
+    public static List<MapDef> AllMaps;
     public static HashMap<Player, Game> PlayerToGame;
 
 

@@ -11,11 +11,9 @@ import java.util.List;
 import java.util.Objects;
 
 public class Main extends JavaPlugin {
+    private final Game g = new Game(this);
     FileConfiguration config;
     List<ConfigurationSection> arenasList;
-    static List<MapDef> allArenas;
-
-    private final Game g = new Game(this);
 
     @Override
     public void onEnable() {
@@ -23,7 +21,7 @@ public class Main extends JavaPlugin {
         this.config = getConfig();
 
         //register listeners _____________
-        new InventoryListener(this);
+        new MainListener(this);
 
         // FOR LOOP loads the map info from config and saves it into mapdef objects for later use.
         // this loop also creates entries in gamemap
@@ -84,7 +82,10 @@ public class Main extends JavaPlugin {
 
 
             MapDef arenaDataCurrent = new MapDef(displayBlock, cageLoc, SpawnOneLoc, SpawnTwoLoc, LobbyLoc, PlayersNeeded, ArenaName, C1Loc, C2Loc);
-            allArenas.add(arenaDataCurrent);
+
+            // add to the relevant public lists
+            Join.Waiting.put(arenaDataCurrent, null);
+            Maps.AllMaps.add(arenaDataCurrent);
         }
 
         //register commands

@@ -1,6 +1,5 @@
 package io.github.atultw.gmsbridge;
 
-import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.world.DataException;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -10,15 +9,16 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
-import java.util.Objects;
+import java.util.HashSet;
 
-public class InventoryListener implements Listener {
+public class MainListener implements Listener {
 
-    public InventoryListener(Main plugin) {
+    public MainListener(Main plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -29,7 +29,7 @@ public class InventoryListener implements Listener {
 
     // Check for clicks on items
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent e) throws IOException, InterruptedException, MaxChangedBlocksException, DataException {
+    public void onInventoryClick(InventoryClickEvent e) throws IOException, DataException {
         Player p = (Player) e.getWhoClicked(); // The player that clicked the item
         ItemStack clickedItem = e.getCurrentItem(); // The item that was clicked
         Inventory inventory = e.getInventory(); // The inventory that was clicked in
@@ -40,10 +40,10 @@ public class InventoryListener implements Listener {
         //}
 
         // Using slots click is a best option for your inventory click's
-        for (int i = 0; i < SelectorCommand.maps.size(); i++) {
+        for (int i = 0; i < Maps.AllMaps.size(); i++) {
             assert clickedItem != null;
-            if (Objects.requireNonNull(clickedItem.getItemMeta()).getDisplayName().equals(SelectorCommand.maps.get(i).getArenaName())) {
-                PlayerJoin.JoinPlayer(p, SelectorCommand.maps.get(i));
+            if (clickedItem.getItemMeta().getDisplayName().equals(Maps.AllMaps.get(i).getArenaName())) {
+                Join.Initialize(p, Maps.AllMaps.get(i));
             }
         }
     }
@@ -63,5 +63,22 @@ public class InventoryListener implements Listener {
         Bukkit.broadcastMessage("moved");
         e.setCancelled(true);
         //}
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        Player p = e.getPlayer();
+        HashSet<Player> allwaiting = new HashSet<>();
+
+        //check if the player involved is waiting in any maps, and if so remove them from the waitlist
+
+        for (MapDef M : Join.Waiting.keySet()) {
+            allwaiting.addAll(Join.Waiting.get(M));
+        }
+        if (allwaiting.contains(p)) {
+            for (MapDef M : Join.Waiting.keySet()) {
+                Join.Waiting.get(M).remove(p);
+            }
+        }
     }
 }

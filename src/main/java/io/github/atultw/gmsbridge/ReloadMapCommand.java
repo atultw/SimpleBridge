@@ -11,7 +11,7 @@ import java.io.IOException;
 public class ReloadMapCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        MapDef m = Main.allArenas.get(0);
+        MapDef m = Maps.AllMaps.get(0);
         try {
             Game.Reset(m);
         } catch (DataException | IOException | MaxChangedBlocksException e) {
