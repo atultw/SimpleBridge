@@ -5,6 +5,7 @@ package io.github.atultw.gmsbridge;
 import org.bukkit.Location;
 
 public class MapDef {
+
     String DisplayBlock;
     Location CageLocation;
     Location SpawnOneLocation;
@@ -61,4 +62,6 @@ public class MapDef {
     public int getPlayerCount(){
         return this.PlayersNeeded;
     }
+
+
 }

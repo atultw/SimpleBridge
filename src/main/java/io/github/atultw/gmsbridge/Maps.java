@@ -5,16 +5,12 @@ package io.github.atultw.gmsbridge;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
 
 public class Maps {
 
-    // use to find who is waiting in each map
-    static HashMap<MapDef, List<Player>> PlayersWaiting = new HashMap<>();
-
-    // use to find who is playing in maps
-    static HashMap<MapDef, HashMap<Integer, Player>> PlayersInGame = new HashMap<>();
+    public static HashSet<MapDef> AllMaps;
+    public static HashMap<Player, Game> PlayerToGame;
 
 
     /**
@@ -29,30 +25,9 @@ public class Maps {
      * }
      **/
 
-    public static MapDef getMapOfPlayer(Player p) {
-        MapDef mapout = null;
 
-        for (Map.Entry<MapDef, List<Player>> entry : PlayersWaiting.entrySet()) {
-            if (PlayersWaiting.get(entry).contains(p)){
-                mapout = entry.getKey();
-            }
-        }
-
-        return mapout;
+    public Game getGameOfPlayer(Player p) {
+        return PlayerToGame.get(p);
     }
 
-    /** public List<Player> getPlayersOfMap (MapDef m) {
-     return PlayersWaiting.get(m);
-     } **/
-
-    public Player getOtherPlayer(Player p) {
-        Player otherPlayer = null;
-        MapDef mapOfPlayer = getMapOfPlayer(p);
-        if (PlayersInGame.get(mapOfPlayer).get(0) == p) {
-            otherPlayer = PlayersInGame.get(mapOfPlayer).get(1);
-        } else if (PlayersInGame.get(mapOfPlayer).get(1) == p) {
-            otherPlayer = PlayersInGame.get(mapOfPlayer).get(0);
-        }
-        return otherPlayer;
-    }
 }

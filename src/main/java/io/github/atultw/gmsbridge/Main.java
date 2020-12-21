@@ -7,20 +7,15 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class Main extends JavaPlugin {
     FileConfiguration config;
-    List<ConfigurationSection> arenasList = new ArrayList();
-    static List<MapDef> allArenas = new ArrayList();
+    List<ConfigurationSection> arenasList;
+    static List<MapDef> allArenas;
 
     private final Game g = new Game(this);
-
-    public Game getG() {
-        return g;
-    }
 
     @Override
     public void onEnable() {
@@ -89,10 +84,6 @@ public class Main extends JavaPlugin {
 
 
             MapDef arenaDataCurrent = new MapDef(displayBlock, cageLoc, SpawnOneLoc, SpawnTwoLoc, LobbyLoc, PlayersNeeded, ArenaName, C1Loc, C2Loc);
-            //save to gamemap array
-            Maps.PlayersWaiting.put(arenaDataCurrent, null);
-            Maps.PlayersInGame.put(arenaDataCurrent, null);
-
             allArenas.add(arenaDataCurrent);
         }
 
