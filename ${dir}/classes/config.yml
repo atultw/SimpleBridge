@@ -1,34 +1,34 @@
 arenas:
   winter:
-    lobbyworld: "lobby"
+    lobbyworld: "world"
     cageworld: "bridge2"
     arenaworld: "bridge2"
-    name: "winter theme"
+    name: "nature"
     players: 2
     # the block name must be all caps e.g. "ACACIA_BOAT"
     displayblock: "GRASS_BLOCK"
 
-    lobbyx: 1
-    lobbyy: 1
-    lobbyz: 1
+    lobbyx: -120
+    lobbyy: 64
+    lobbyz: 75
 
-    cagex: 2
-    cagey: 1
-    cagez: 3
+    cagex: 17
+    cagey: 82
+    cagez: -3
 
-    xone: 10
-    yone: 10
-    zone: 10
+    xone: 0
+    yone: 72
+    zone: -25
 
-    xtwo: 20
-    ytwo: 20
-    ztwo: 20
+    xtwo: 0
+    ytwo: 72
+    ztwo: 25
 
     # corners
-    c1x: 1
-    c1y: 1
-    c1z: 1
+    c1x: -15
+    c1y: 48
+    c1z: 34
 
-    c2x: 10
-    c2y: 70
-    c2z: 100
+    c2x: 13
+    c2y: 85
+    c2z: -32

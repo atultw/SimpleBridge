@@ -7,28 +7,21 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.List;
 import java.util.Objects;
 
 public class Main extends JavaPlugin {
-    private final Game g = new Game(this);
     FileConfiguration config;
-    List<ConfigurationSection> arenasList;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         this.config = getConfig();
 
-        //register listeners _____________
-        new MainListener(this);
-
         // FOR LOOP loads the map info from config and saves it into mapdef objects for later use.
         // this loop also creates entries in gamemap
         for (String key : Objects.requireNonNull(config.getConfigurationSection("arenas")).getKeys(false)) {
             // get the section for the individual key
             ConfigurationSection thisArena = config.getConfigurationSection("arenas." + key);
-            this.arenasList.add(config.getConfigurationSection("arenas." + key));
 
             // get the cage info
             assert thisArena != null;
@@ -75,23 +68,33 @@ public class Main extends JavaPlugin {
             int PlayersNeeded = thisArena.getInt("players");
             String ArenaName = thisArena.getString("name");
 
-            /**DEBUG**/ //Bukkit.getConsoleSender().sendMessage(cageLoc.toString());
-            /**DEBUG**/ //Bukkit.getConsoleSender().sendMessage(Objects.requireNonNull(thisArena.getString("cageworld")));
-            /**DEBUG**/ //assert cageW != null;
-            /**DEBUG**/ //Bukkit.getConsoleSender().sendMessage(cageW.toString());
+            //Bukkit.getConsoleSender().sendMessage(cageLoc.toString());
+            //Bukkit.getConsoleSender().sendMessage(Objects.requireNonNull(thisArena.getString("cageworld")));
+            //assert cageW != null;
+            //Bukkit.getConsoleSender().sendMessage(cageW.toString());
 
 
             MapDef arenaDataCurrent = new MapDef(displayBlock, cageLoc, SpawnOneLoc, SpawnTwoLoc, LobbyLoc, PlayersNeeded, ArenaName, C1Loc, C2Loc);
 
             // add to the relevant public lists
-            Join.Waiting.put(arenaDataCurrent, null);
-            Maps.AllMaps.add(arenaDataCurrent);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
+                /* DEBUG**/
+                Bukkit.broadcastMessage("saving to lists");
+                Join.Waiting.put(null, null);
+                //Join.Waiting.put(arenaDataCurrent, new ArrayList<>());
+                Maps.AllMaps.add(arenaDataCurrent);
+            }, 20L);
+
         }
 
         //register commands
         Objects.requireNonNull(this.getCommand("duel")).setExecutor(new SelectorCommand());
         Objects.requireNonNull(this.getCommand("reloadb2")).setExecutor(new ReloadMapCommand());
         Objects.requireNonNull(this.getCommand("saveb2")).setExecutor(new SaveMapCommand());
+
+        //register listeners _____________
+        new MainListener(this);
+        final Game g = new Game(this);
     }
 
 }
