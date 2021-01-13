@@ -12,9 +12,9 @@ arenas:
     lobbyy: 64
     lobbyz: 75
 
-    cagex: 17
-    cagey: 82
-    cagez: -3
+    cagex: 0
+    cagey: 96
+    cagez: -1
 
     xone: 0
     yone: 72
@@ -25,10 +25,10 @@ arenas:
     ztwo: 25
 
     # corners
-    c1x: -15
-    c1y: 48
-    c1z: 34
+    c1x: -14
+    c1y: 53
+    c1z: -34
 
-    c2x: 13
-    c2y: 85
-    c2z: -32
+    c2x: 23
+    c2y: 94
+    c2z: 26

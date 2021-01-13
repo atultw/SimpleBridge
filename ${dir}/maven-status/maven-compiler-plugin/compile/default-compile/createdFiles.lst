@@ -1,10 +1,11 @@
-io\github\atultw\gmsbridge\Maps.class
 io\github\atultw\gmsbridge\SelectorCommand.class
+io\github\atultw\gmsbridge\FireworkHandler.class
+io\github\atultw\gmsbridge\Main.class
+io\github\atultw\gmsbridge\Maps.class
 io\github\atultw\gmsbridge\ReloadMapCommand.class
 io\github\atultw\gmsbridge\InternalSchematic.class
 io\github\atultw\gmsbridge\SaveMapCommand.class
 io\github\atultw\gmsbridge\MainListener.class
-io\github\atultw\gmsbridge\Main.class
 io\github\atultw\gmsbridge\Join.class
 io\github\atultw\gmsbridge\Game.class
 io\github\atultw\gmsbridge\MapDef.class

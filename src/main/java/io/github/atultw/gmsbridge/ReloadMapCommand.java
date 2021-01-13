@@ -1,6 +1,6 @@
 package io.github.atultw.gmsbridge;
 
-import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.world.DataException;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,7 +14,7 @@ public class ReloadMapCommand implements CommandExecutor {
         MapDef m = Maps.AllMaps.get(0);
         try {
             Game.Reset(m);
-        } catch (DataException | IOException | MaxChangedBlocksException e) {
+        } catch (DataException | IOException | WorldEditException e) {
             e.printStackTrace();
         }
         return true;

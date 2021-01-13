@@ -7,6 +7,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class Main extends JavaPlugin {
@@ -80,8 +81,8 @@ public class Main extends JavaPlugin {
             Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
                 /* DEBUG**/
                 Bukkit.broadcastMessage("saving to lists");
-                Join.Waiting.put(null, null);
-                //Join.Waiting.put(arenaDataCurrent, new ArrayList<>());
+                Bukkit.broadcastMessage(arenaDataCurrent.getSpawnOneLocation().toString());
+                Join.Waiting.put(arenaDataCurrent, new ArrayList<>());
                 Maps.AllMaps.add(arenaDataCurrent);
             }, 20L);
 
@@ -94,7 +95,9 @@ public class Main extends JavaPlugin {
 
         //register listeners _____________
         new MainListener(this);
-        final Game g = new Game(this);
+        new Game(this);
+
+
     }
 
 }

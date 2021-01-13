@@ -42,7 +42,7 @@ public class SelectorCommand implements CommandExecutor {
         for (int i = 0; i < Maps.AllMaps.size(); i++) {
             String DisplayBlock = Maps.AllMaps.get(i).getDisplayBlock();
             String ArenaName = Maps.AllMaps.get(i).getArenaName();
-            inv.setItem(i, createGuiItem(Material.STONE, ArenaName, "§aFirst line of the lore", "§bSecond line of the lore"));
+            inv.setItem(i, createGuiItem(Material.DIAMOND_SWORD, ArenaName, "§aNature Arena", "§bPvP and earn points in a one minute battle!"));
             // Material.getMaterial(DisplayBlock)
         }
     }

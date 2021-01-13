@@ -1,14 +1,17 @@
 package io.github.atultw.gmsbridge;
 
 
-import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.world.DataException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -18,21 +21,33 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 public class Game implements Listener {
-    static HashSet<Player> allPlayersPlaying;
-    static List<MapDef> MapsInUse;
+    static Main plugin;
+    static HashSet<Player> allPlayersPlaying = new HashSet<>();
+    public List<Player> PlayersPlaying = new ArrayList<>();
+    static List<MapDef> MapsInUse = new ArrayList<>();
     static HashMap<Player, Integer> pointsCounter = new HashMap<>();
-    private static Main plugin;
-    public List<Player> PlayersPlaying;
+
+
+    //scheduler ids
+    Integer taskInit;
+    List<Integer> taskCountdown = new ArrayList<>();
+    Integer taskSummary;
+    Integer taskStop;
+
     Player p1;
     Player p2;
     MapDef m;
 
     //constructors
+    public Game(Main p) {
+        plugin = p;
+    }
 
     public Game(Player p1, Player p2, MapDef ma) {
         this.p1 = p1;
@@ -40,13 +55,8 @@ public class Game implements Listener {
         this.m = ma;
     }
 
-    public Game(Main plugin) {
-        Game.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
-    }
-
-    public static void Reset(MapDef m) throws DataException, IOException, MaxChangedBlocksException {
-        InternalSchematic.Load(m, m.getC1l().getWorld(), m.getC1l());
+    public static void Reset(MapDef m) throws DataException, IOException, WorldEditException {
+        InternalSchematic.loadSchem(m, m.getC1l().getWorld(), m.getC1l());
     }
 
     public void EditPoints(Player p, Integer n) {
@@ -55,24 +65,29 @@ public class Game implements Listener {
         pointsCounter.put(p, newPoints);
     }
 
-    public void Start() throws IOException, DataException {
+    public void Start() {
+
+        //register listener
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+
+
+        //remove from waiting
+        Join.Waiting.get(m).remove(p1);
+        Join.Waiting.get(m).remove(p2);
+        //initialize points entries
+        pointsCounter.put(p1, 0);
+        pointsCounter.put(p2, 0);
+
         // add these players
         allPlayersPlaying.add(p1);
         allPlayersPlaying.add(p2);
-
         // mark map as in use
         MapsInUse.add(m);
 
-        ///**DEBUG**/Bukkit.broadcastMessage("start called");
-
-        //SAVE THE SCHEMATIC FOR LATER
-        InternalSchematic.New(m, m.getC1l().getWorld(), m.getC1l(), m.getC2l());
-
-        //PUT THE PLAYERS INTO THE "PLAYING" LIST
         PlayersPlaying.add(p1);
         PlayersPlaying.add(p2);
 
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+        taskInit = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
 
             Bukkit.broadcastMessage("initializing game");
             //let players know
@@ -88,57 +103,72 @@ public class Game implements Listener {
             p2.getInventory().clear();
             ItemStack[] startItems = {new ItemStack(Material.IRON_BOOTS), new ItemStack(Material.IRON_CHESTPLATE), new ItemStack(Material.IRON_LEGGINGS), new ItemStack(Material.IRON_HELMET), new ItemStack(Material.IRON_SWORD)};
             p1.getInventory().addItem(startItems);
+            p2.getInventory().addItem(startItems);
+
+
         }, 20L);
+
 
         for (int i = 1; i < 6; i++) {
             final int count = i;
-            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                Bukkit.broadcastMessage("This message is shown after" + count * 10 + "seconds");
-                p1.sendTitle(60 - 10 * count + "" + ChatColor.BLUE + "Seconds!", "left till end of match");
-                p2.sendTitle(60 - 10 * count + "" + ChatColor.BLUE + "Seconds!", "left till end of match");
-            }, Long.parseLong("200*count + L"));
+            taskCountdown.add(
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                        Bukkit.broadcastMessage("This message is shown after" + count * 10 + "seconds");
+                        p1.sendTitle(60 - 10 * count + "" + ChatColor.BLUE + "Seconds!", "left till end of match");
+                        p2.sendTitle(60 - 10 * count + "" + ChatColor.BLUE + "Seconds!", "left till end of match");
+                    }, 200 * count)
+            );
         }
 
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+        taskSummary = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
             /* DEBUG**/
             Bukkit.broadcastMessage("This message is shown after ten seconds");
             p1.sendTitle(ChatColor.RED + "All Done!", "GG! You got " + ChatColor.AQUA + pointsCounter.get(p1) + " Points!");
             p2.sendTitle(ChatColor.RED + "All Done!", "GG! You got " + ChatColor.AQUA + pointsCounter.get(p2) + " Points!");
         }, 1200L);
 
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            /* DEBUG**/
+
+        taskStop = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            // DEBUG
             Bukkit.broadcastMessage("stopping");
             try {
                 Stop();
-            } catch (IOException | MaxChangedBlocksException | DataException e) {
+            } catch (DataException | IOException | WorldEditException e) {
                 e.printStackTrace();
             }
         }, 1215L);
 
+
     }
 
-    public void Stop() throws IOException, DataException, MaxChangedBlocksException {
+    public void Stop() throws DataException, IOException, WorldEditException {
+        //cancel listeners
+        HandlerList.unregisterAll(this);
+        //stop the scheduled tasks
+        plugin.getServer().getScheduler().cancelTask(taskInit);
+        plugin.getServer().getScheduler().cancelTask(taskSummary);
+        for (int i : taskCountdown) {
+            plugin.getServer().getScheduler().cancelTask(i);
+        }
+
         Bukkit.broadcastMessage("stopped cool");
         // clear inventories
         p1.getInventory().clear();
         p2.getInventory().clear();
-
         // teleport back to lobby
         p1.teleport(m.getLobbyLocation());
         p2.teleport(m.getLobbyLocation());
-
         // remove from the lists
         allPlayersPlaying.remove(p1);
         allPlayersPlaying.remove(p2);
-
         //manage points
         pointsCounter.remove(p1);
         pointsCounter.remove(p2);
-
+        // remove players so game doesn't work anymore
+        this.p1 = null;
+        this.p2 = null;
         // reset from schematic
         Reset(m);
-
         // map no longer in use
         MapsInUse.remove(m);
     }
@@ -146,9 +176,29 @@ public class Game implements Listener {
     @EventHandler
     public void onEDeath(EntityDeathEvent event) {
 
+        //if its not a player
+
+        if (event.getEntity().getType() != EntityType.PLAYER) {
+            return;
+        }
+
+        Player killed = (Player) event.getEntity();
+
+        //do always
+        if (killed == p1) {
+            killed.setHealth(20.0);
+            killed.setFoodLevel(20);
+            killed.teleport(m.getSpawnOneLocation());
+        }
+
+        if (killed == p2) {
+            killed.setHealth(20.0);
+            killed.setFoodLevel(20);
+            killed.teleport(m.getSpawnTwoLocation());
+        }
+        //do only if killed by opponent
         if (event.getEntity().getKiller() != null) {
             Player attacker = event.getEntity().getKiller();
-            Player killed = (Player) event.getEntity();
             if (attacker == p1 | attacker == p2) {
 
                 //prevent respawn screen
@@ -158,10 +208,12 @@ public class Game implements Listener {
                 //increase points by 10 for kill
                 EditPoints(attacker, 10);
                 attacker.sendMessage(ChatColor.AQUA + "You Killed" + killed.getName() + "! +10 Points");
+                FireworkHandler.launch(attacker.getLocation(), Color.BLUE);
 
                 //decrease points by 10 for kill
                 EditPoints(killed, -10);
                 killed.sendMessage(ChatColor.AQUA + "You Died! -10 Points");
+                FireworkHandler.launch(killed.getLocation(), Color.WHITE);
 
                 //teleport to bed location instead of global spawn
                 // if killed is player 0 of this game
@@ -194,57 +246,51 @@ public class Game implements Listener {
         if (e.getDamager() == p1 && e.getEntity() == p2) {
             Player damager = (Player) e.getDamager();
             Player receiver = (Player) e.getEntity();
-            //removed check if player ------------------
+
             EditPoints(damager, 1);
             EditPoints(receiver, -1);
         }
     }
 
     @EventHandler
-    public void onBlockBreak(BlockBreakEvent e) throws IOException, DataException, MaxChangedBlocksException {
+    public void onBlockBreak(BlockBreakEvent e) {
         Player p = e.getPlayer();
         Block b = e.getBlock();
 
         //if first bed broken
         if (b.getLocation() == m.getSpawnOneLocation()) {
-            if (p == p1) {
+            if (p == p2) {
                 //get second player in map of p and award points
-                EditPoints(p1, 15);
-                p.sendMessage(ChatColor.AQUA + "Bed Broken: 15 Points to you!");
+                EditPoints(p2, 15);
+                p2.sendMessage(ChatColor.AQUA + "Bed Broken: 15 Points to you!");
+                p1.sendMessage(ChatColor.RED + "Your bed is broken.");
                 m.getSpawnOneLocation().getBlock().setType(Material.BED);
 
-                MapDef thisMap = m;
-                //reset map
-
-                Reset(thisMap);
-
                 //teleport back to spawn locations
-                p1.teleport(thisMap.getSpawnOneLocation());
-                p2.teleport(thisMap.getSpawnTwoLocation());
+                p1.teleport(m.getSpawnOneLocation());
+                p2.teleport(m.getSpawnTwoLocation());
             }
         }
 
         //if second bed broken
         if (b.getLocation() == m.getSpawnTwoLocation()) {
-            if (allPlayersPlaying.contains(p)) {
-                //get first player in map of p and award points
+            if (p == p1) {
+                //get second player in map of p and award points
                 EditPoints(p1, 15);
-                p.sendMessage(ChatColor.AQUA + "Bed Broken: 15 Points to you!");
-
-                MapDef thisMap = m;
-                //reset map
-
-                Reset(thisMap);
+                p1.sendMessage(ChatColor.AQUA + "Bed Broken: 15 Points to you!");
+                p2.sendMessage(ChatColor.RED + "Your bed is broken.");
+                m.getSpawnTwoLocation().getBlock().setType(Material.BED);
 
                 //teleport back to spawn locations
-                p1.teleport(thisMap.getSpawnOneLocation());
-                p2.teleport(thisMap.getSpawnTwoLocation());
+                p1.teleport(m.getSpawnOneLocation());
+                p2.teleport(m.getSpawnTwoLocation());
             }
         }
+        //}
     }
 
     @EventHandler
-    public void onQuit(PlayerQuitEvent e) throws DataException, IOException, MaxChangedBlocksException {
+    public void onQuit(PlayerQuitEvent e) throws DataException, IOException, WorldEditException {
         Player p = e.getPlayer();
         if (p == p1 | p == p2) {
             Stop();
