@@ -1,5 +1,6 @@
-package io.github.atultw.gmsbridge;
+package io.github.atultw.gmsbridge.commands;
 
+import io.github.atultw.gmsbridge.Maps;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;

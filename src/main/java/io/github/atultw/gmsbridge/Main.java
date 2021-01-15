@@ -1,5 +1,7 @@
 package io.github.atultw.gmsbridge;
 
+import io.github.atultw.gmsbridge.commands.HubCommand;
+import io.github.atultw.gmsbridge.commands.SelectorCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -65,6 +67,16 @@ public class Main extends JavaPlugin {
             int c2Z = thisArena.getInt("c2z");
             Location C2Loc = new Location(SpawnW, c2X, c2Y, c2Z);
 
+            int g1X = thisArena.getInt("goal1x");
+            int g1Y = thisArena.getInt("goal1y");
+            int g1Z = thisArena.getInt("goal1z");
+            Location G1Loc = new Location(SpawnW, g1X, g1Y, g1Z);
+
+            int g2X = thisArena.getInt("goal1x");
+            int g2Y = thisArena.getInt("goal1y");
+            int g2Z = thisArena.getInt("goal1z");
+            Location G2Loc = new Location(SpawnW, g2X, g2Y, g2Z);
+
             // get the game info
             int PlayersNeeded = thisArena.getInt("players");
             String ArenaName = thisArena.getString("name");
@@ -75,13 +87,11 @@ public class Main extends JavaPlugin {
             //Bukkit.getConsoleSender().sendMessage(cageW.toString());
 
 
-            MapDef arenaDataCurrent = new MapDef(displayBlock, cageLoc, SpawnOneLoc, SpawnTwoLoc, LobbyLoc, PlayersNeeded, ArenaName, C1Loc, C2Loc);
+            MapDef arenaDataCurrent = new MapDef(displayBlock, cageLoc, SpawnOneLoc, SpawnTwoLoc, LobbyLoc, PlayersNeeded, ArenaName, C1Loc, C2Loc, G1Loc, G2Loc);
 
             // add to the relevant public lists
             Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
-                /* DEBUG**/
-                Bukkit.broadcastMessage("saving to lists");
-                Bukkit.broadcastMessage(arenaDataCurrent.getSpawnOneLocation().toString());
+                Bukkit.broadcastMessage("enabled");
                 Join.Waiting.put(arenaDataCurrent, new ArrayList<>());
                 Maps.AllMaps.add(arenaDataCurrent);
             }, 20L);
@@ -90,14 +100,15 @@ public class Main extends JavaPlugin {
 
         //register commands
         Objects.requireNonNull(this.getCommand("duel")).setExecutor(new SelectorCommand());
-        Objects.requireNonNull(this.getCommand("reloadb2")).setExecutor(new ReloadMapCommand());
-        Objects.requireNonNull(this.getCommand("saveb2")).setExecutor(new SaveMapCommand());
-
+        //Objects.requireNonNull(this.getCommand("reloadb2")).setExecutor(new ReloadMapCommand());
+        //Objects.requireNonNull(this.getCommand("saveb2")).setExecutor(new SaveMapCommand());
+        Objects.requireNonNull(this.getCommand("h")).setExecutor(new HubCommand());
+        Objects.requireNonNull(this.getCommand("hub")).setExecutor(new HubCommand());
         //register listeners _____________
         new MainListener(this);
         new Game(this);
 
-
     }
+
 
 }

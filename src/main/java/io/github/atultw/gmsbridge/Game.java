@@ -3,19 +3,16 @@ package io.github.atultw.gmsbridge;
 
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.world.DataException;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
+import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
@@ -98,6 +95,10 @@ public class Game implements Listener {
             p1.teleport(m.getSpawnOneLocation());
             p2.teleport(m.getSpawnTwoLocation());
 
+            //gamemodes
+            p1.setGameMode(GameMode.SURVIVAL);
+            p2.setGameMode(GameMode.SURVIVAL);
+
             //give initial items
             p1.getInventory().clear();
             p2.getInventory().clear();
@@ -105,7 +106,9 @@ public class Game implements Listener {
             p1.getInventory().addItem(startItems);
             p2.getInventory().addItem(startItems);
 
-
+            //fireworks!!
+            FireworkHandler.launch(p1.getLocation(), Color.RED);
+            FireworkHandler.launch(p2.getLocation(), Color.RED);
         }, 20L);
 
 
@@ -252,6 +255,26 @@ public class Game implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onMove(PlayerMoveEvent e) {
+        if (m.g2l.contains(e.getTo().getBlock().getLocation())) {
+            EditPoints(p1, 15);
+            p1.sendMessage(ChatColor.AQUA + "Goal! 15 Points to you!");
+            p1.teleport(m.getSpawnOneLocation());
+            p2.teleport(m.getSpawnTwoLocation());
+            p2.sendMessage(ChatColor.RED + "Opponent jumped through your goal!");
+        }
+
+        if (m.g1l.contains(e.getTo().getBlock().getLocation())) {
+            EditPoints(p2, 15);
+            p2.sendMessage(ChatColor.AQUA + "Goal! 15 Points to you!");
+            p1.teleport(m.getSpawnOneLocation());
+            p2.teleport(m.getSpawnTwoLocation());
+            p1.sendMessage(ChatColor.RED + "Opponent jumped through your goal!");
+        }
+    }
+
+/*
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e) {
         Player p = e.getPlayer();
@@ -288,6 +311,7 @@ public class Game implements Listener {
         }
         //}
     }
+*/
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) throws DataException, IOException, WorldEditException {

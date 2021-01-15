@@ -2,6 +2,7 @@ package io.github.atultw.gmsbridge;
 
 import com.sk89q.worldedit.world.DataException;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -63,6 +64,12 @@ public class MainListener implements Listener {
         Bukkit.broadcastMessage("moved");
         e.setCancelled(true);
         //}
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        p.teleport(new Location(Bukkit.getWorld("lobby"), 0, 66, 0));
     }
 
     @EventHandler

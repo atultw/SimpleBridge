@@ -1,30 +1,39 @@
 arenas:
-  winter:
-    lobbyworld: "world"
+  # just put something random for this
+  nature:
+    # name of world for lobby, leave it at "lobby"
+    lobbyworld: "lobby"
+    # world name of the cage
     cageworld: "bridge2"
+    # world name of the spawns
     arenaworld: "bridge2"
+    # name as it will show up in menus etc
     name: "nature"
+    # ignore this
     players: 2
-    # the block name must be all caps e.g. "ACACIA_BOAT"
+    # ignore this
     displayblock: "GRASS_BLOCK"
 
-    lobbyx: -120
-    lobbyy: 64
-    lobbyz: 75
-
+    # lobby cords leave at this
+    lobbyx: -1
+    lobbyy: 72
+    lobbyz: -1
+    # cage cords
     cagex: 0
     cagey: 96
     cagez: -1
 
-    xone: 0
+    # spawn one cords
+    xone: 4
     yone: 72
-    zone: -25
+    zone: 13
 
-    xtwo: 0
+    # spawn two cords
+    xtwo: -4
     ytwo: 72
-    ztwo: 25
+    ztwo: -12
 
-    # corners
+    # corners for the schematic, make sure that all values in corner 2 are larger than in corner 1 because of worldedit being finnicky. for example c1x MUST be less than c2x and c1y MUST be less than c2y.
     c1x: -14
     c1y: 53
     c1z: -34
@@ -32,3 +41,62 @@ arenas:
     c2x: 23
     c2y: 94
     c2z: 26
+
+    goal1x: 0
+    goal1y: 72
+    goal1z: 25
+
+    goal2x: 0
+    goal2y: 72
+    goal2z: -25
+
+  # just put something random for this
+  sandstone:
+    # name of world for lobby, leave it at "lobby"
+    lobbyworld: "lobby"
+    # world name of the cage
+    cageworld: "bridge3"
+    # world name of the spawns
+    arenaworld: "bridge3"
+    # name as it will show up in menus etc
+    name: "sandstone"
+    # ignore this
+    players: 2
+    # ignore this
+    displayblock: "GRASS_BLOCK"
+
+    # lobby cords leave at this
+    lobbyx: -1
+    lobbyy: 72
+    lobbyz: -1
+    # cage cords
+    cagex: -7
+    cagey: 104
+    cagez: -2
+
+    # spawn one cords
+    xone: 4
+    yone: 72
+    zone: 13
+
+    # spawn two cords
+    xtwo: -4
+    ytwo: -72
+    ztwo: -12
+
+    # corners for the schematic, make sure that all values in corner 2 are larger than in corner 1 because of worldedit being finnicky. for example c1x MUST be less than c2x and c1y MUST be less than c2y.
+    c1x: -45
+    c1y: 60
+    c1z: -12
+
+    c2x: 30
+    c2y: 90
+    c2z: 10
+
+    goal1x: 0
+    goal1y: 72
+    goal1z: 25
+
+    goal2x: 0
+    goal2y: 72
+    goal2z: -25

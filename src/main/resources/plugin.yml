@@ -8,11 +8,20 @@ commands:
     description: Select a map to duel
     usage: /<command>
     permission: gms.home
-  reloadb2:
-    description: debug command to test schematic
+  #  reloadb2:
+  #    description: debug command to test schematic
+  #    usage: /<command>
+  #    permission: gms.home
+  #  saveb2:
+  #    description: debug command to test schematic
+  #    usage: /<command>
+  #    permission: gms.home
+  hub:
+    description: go to hub
     usage: /<command>
     permission: gms.home
-  saveb2:
-    description: debug command to test schematic
+
+  h:
+    description: go to hub
     usage: /<command>
     permission: gms.home
