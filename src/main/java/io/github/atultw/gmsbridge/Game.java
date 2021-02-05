@@ -174,6 +174,10 @@ public class Game implements Listener {
         Reset(m);
         // map no longer in use
         MapsInUse.remove(m);
+        
+        
+        //inform lobby system that the arena is now open for players. 
+        Join.nextGame(m);
     }
 
     @EventHandler
@@ -273,45 +277,6 @@ public class Game implements Listener {
             p1.sendMessage(ChatColor.RED + "Opponent jumped through your goal!");
         }
     }
-
-/*
-    @EventHandler
-    public void onBlockBreak(BlockBreakEvent e) {
-        Player p = e.getPlayer();
-        Block b = e.getBlock();
-
-        //if first bed broken
-        if (b.getLocation() == m.getSpawnOneLocation()) {
-            if (p == p2) {
-                //get second player in map of p and award points
-                EditPoints(p2, 15);
-                p2.sendMessage(ChatColor.AQUA + "Bed Broken: 15 Points to you!");
-                p1.sendMessage(ChatColor.RED + "Your bed is broken.");
-                m.getSpawnOneLocation().getBlock().setType(Material.BED);
-
-                //teleport back to spawn locations
-                p1.teleport(m.getSpawnOneLocation());
-                p2.teleport(m.getSpawnTwoLocation());
-            }
-        }
-
-        //if second bed broken
-        if (b.getLocation() == m.getSpawnTwoLocation()) {
-            if (p == p1) {
-                //get second player in map of p and award points
-                EditPoints(p1, 15);
-                p1.sendMessage(ChatColor.AQUA + "Bed Broken: 15 Points to you!");
-                p2.sendMessage(ChatColor.RED + "Your bed is broken.");
-                m.getSpawnTwoLocation().getBlock().setType(Material.BED);
-
-                //teleport back to spawn locations
-                p1.teleport(m.getSpawnOneLocation());
-                p2.teleport(m.getSpawnTwoLocation());
-            }
-        }
-        //}
-    }
-*/
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) throws DataException, IOException, WorldEditException {
