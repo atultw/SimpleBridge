@@ -25,6 +25,15 @@ public class Join {
             }
         }
     }
-
+    
+    public static boolean nextGame(MapDef m) {
+        if (Waiting.get(m).size() >= 2) {
+            if (!(Game.MapsInUse.contains(m))) {
+                Game g = new Game(Waiting.get(m).get(0), Waiting.get(m).get(1), m);
+                g.Start();
+            }
+        }
+    }
+    
     // SEE MAINLISTENER FOR EVENT LISTENERS
 }
